@@ -1,76 +1,88 @@
 package main
 
-import "fmt"
-
-const (
-	minLimitTemp = 15
-	maxLimitTemp = 30
-	opGreaterEq  = ">="
-	opLessEq     = "<="
-	invalidTemp  = -1
+import (
+	"fmt"
 )
 
-type climateControl struct {
-	minTemp int
-	maxTemp int
+const (
+	defaultMinTemp = 15
+	defaultMaxTemp = 30
+	signGreaterEq  = ">="
+	signLessEq     = "<="
+	noSolutionCode = -1
+)
+
+type TempRange struct {
+	low  int
+	high int
 }
 
-func newClimateControl() climateControl {
-	return climateControl{
-		minTemp: minLimitTemp,
-		maxTemp: maxLimitTemp,
+func initRange() TempRange {
+	return TempRange{
+		low:  defaultMinTemp,
+		high: defaultMaxTemp,
 	}
 }
 
-func (cc *climateControl) adjust(operator string, target int) int {
-	switch operator {
-	case opGreaterEq:
-		if target > cc.minTemp {
-			cc.minTemp = target
+func updateRange(current TempRange, op string, value int) TempRange {
+	switch op {
+	case signGreaterEq:
+		if value > current.low {
+			current.low = value
 		}
-	case opLessEq:
-		if target < cc.maxTemp {
-			cc.maxTemp = target
+	case signLessEq:
+		if value < current.high {
+			current.high = value
 		}
 	}
 
-	if cc.minTemp > cc.maxTemp {
-		return invalidTemp
+	return current
+}
+
+func readInt(prompt string) (int, bool) {
+	var val int
+	if _, err := fmt.Scan(&val); err != nil {
+		fmt.Println(prompt)
+
+		return 0, false
 	}
 
-	return cc.minTemp
+	return val, true
 }
 
 func main() {
-	var totalDepts int
-	if _, err := fmt.Scan(&totalDepts); err != nil {
-		fmt.Println("Invalid departments count")
-
+	countDepts, ok := readInt("Invalid departments count")
+	if !ok {
 		return
 	}
 
-	for range totalDepts {
-		var totalStaff int
-		if _, err := fmt.Scan(&totalStaff); err != nil {
-			fmt.Println("Invalid employees count")
-
+	for range countDepts {
+		countStaff, ok := readInt("Invalid employees count")
+		if !ok {
 			return
 		}
 
-		ctrl := newClimateControl()
+		rng := initRange()
 
-		for range totalStaff {
-			var condOperator string
+		for range countStaff {
+			var operation string
+			var temperature int
 
-			var wantedTemp int
-
-			if _, err := fmt.Scan(&condOperator, &wantedTemp); err != nil {
+			if _, err := fmt.Scan(&operation, &temperature); err != nil {
 				fmt.Println("Invalid temperature constraint")
 
 				return
 			}
 
-			fmt.Println(ctrl.adjust(condOperator, wantedTemp))
+			rng = updateRange(rng, operation, temperature)
+
+			if rng.low > rng.high {
+				fmt.Println(noSolutionCode)
+
+				return
+			}
+
+			fmt.Println(rng.low)
 		}
 	}
 }
