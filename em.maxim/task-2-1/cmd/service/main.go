@@ -60,8 +60,8 @@ func main() {
 		ctrl := newClimateControl()
 
 		for range totalStaff {
-
 			var condOperator string
+
 			var wantedTemp int
 
 			if _, err := fmt.Scan(&condOperator, &wantedTemp); err != nil {
