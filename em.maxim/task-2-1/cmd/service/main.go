@@ -60,6 +60,7 @@ func main() {
 
 		for range numStaff {
 			var operatorName string
+
 			var temp int
 
 			if _, err := fmt.Scan(&operatorName, &temp); err != nil {
