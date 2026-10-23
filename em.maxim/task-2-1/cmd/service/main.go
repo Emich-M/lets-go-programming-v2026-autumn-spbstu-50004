@@ -60,6 +60,7 @@ func main() {
 		ctrl := newClimateControl()
 
 		for range totalStaff {
+
 			var condOperator string
 			var wantedTemp int
 
