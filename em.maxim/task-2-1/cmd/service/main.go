@@ -1,66 +1,75 @@
 package main
 
-import (
-	"fmt"
+import "fmt"
+
+const (
+	minLimitTemp = 15
+	maxLimitTemp = 30
+	opGreaterEq  = ">="
+	opLessEq     = "<="
+	invalidTemp  = -1
 )
 
-type Department struct {
-	lowerBound int
-	upperBound int
+type climateControl struct {
+	minTemp int
+	maxTemp int
 }
 
-func CreateDepartment() Department {
-	return Department{
-		lowerBound: 15,
-		upperBound: 30,
+func newClimateControl() climateControl {
+	return climateControl{
+		minTemp: minLimitTemp,
+		maxTemp: maxLimitTemp,
 	}
 }
 
-func (d *Department) ApplyConstraint(sign string, val int) int {
-	switch sign {
-	case ">=":
-		if val > d.lowerBound {
-			d.lowerBound = val
+func (cc *climateControl) adjust(operator string, target int) int {
+	switch operator {
+	case opGreaterEq:
+		if target > cc.minTemp {
+			cc.minTemp = target
 		}
-	case "<=":
-		if val < d.upperBound {
-			d.upperBound = val
+	case opLessEq:
+		if target < cc.maxTemp {
+			cc.maxTemp = target
 		}
 	}
 
-	if d.lowerBound > d.upperBound {
-		return -1
+	if cc.minTemp > cc.maxTemp {
+		return invalidTemp
 	}
 
-	return d.lowerBound
+	return cc.minTemp
 }
 
 func main() {
-	var numDepts int
-	if _, err := fmt.Scan(&numDepts); err != nil {
+	var totalDepts int
+	if _, err := fmt.Scan(&totalDepts); err != nil {
 		fmt.Println("Invalid departments count")
+
 		return
 	}
 
-	for i := 0; i < numDepts; i++ {
-		var numStaff int
-		if _, err := fmt.Scan(&numStaff); err != nil {
+	for range totalDepts {
+		var totalStaff int
+		if _, err := fmt.Scan(&totalStaff); err != nil {
 			fmt.Println("Invalid employees count")
+
 			return
 		}
 
-		dept := CreateDepartment()
+		ctrl := newClimateControl()
 
-		for j := 0; j < numStaff; j++ {
-			var op string
-			var temp int
+		for range totalStaff {
+			var condOperator string
+			var wantedTemp int
 
-			if _, err := fmt.Scan(&op, &temp); err != nil {
+			if _, err := fmt.Scan(&condOperator, &wantedTemp); err != nil {
 				fmt.Println("Invalid temperature constraint")
+
 				return
 			}
 
-			fmt.Println(dept.ApplyConstraint(op, temp))
+			fmt.Println(ctrl.adjust(condOperator, wantedTemp))
 		}
 	}
 }
