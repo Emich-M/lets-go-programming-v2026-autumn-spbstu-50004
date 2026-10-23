@@ -34,7 +34,6 @@ func (d *Department) ApplyConstraint(sign string, val int) int {
 	}
 
 	if d.lowerBound > d.upperBound {
-
 		return -1
 	}
 
@@ -61,7 +60,6 @@ func main() {
 
 		for range numStaff {
 			var operatorName string
-
 			var temp int
 
 			if _, err := fmt.Scan(&operatorName, &temp); err != nil {
