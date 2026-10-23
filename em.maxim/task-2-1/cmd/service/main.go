@@ -4,85 +4,63 @@ import (
 	"fmt"
 )
 
-const (
-	defaultMinTemp = 15
-	defaultMaxTemp = 30
-	signGreaterEq  = ">="
-	signLessEq     = "<="
-	noSolutionCode = -1
-)
-
-type TempRange struct {
-	low  int
-	high int
+type Department struct {
+	lowerBound int
+	upperBound int
 }
 
-func initRange() TempRange {
-	return TempRange{
-		low:  defaultMinTemp,
-		high: defaultMaxTemp,
+func CreateDepartment() Department {
+	return Department{
+		lowerBound: 15,
+		upperBound: 30,
 	}
 }
 
-func updateRange(current TempRange, op string, value int) TempRange {
-	switch op {
-	case signGreaterEq:
-		if value > current.low {
-			current.low = value
+func (d *Department) ApplyConstraint(sign string, val int) int {
+	switch sign {
+	case ">=":
+		if val > d.lowerBound {
+			d.lowerBound = val
 		}
-	case signLessEq:
-		if value < current.high {
-			current.high = value
+	case "<=":
+		if val < d.upperBound {
+			d.upperBound = val
 		}
 	}
 
-	return current
-}
-
-func readInt(prompt string) (int, bool) {
-	var val int
-	if _, err := fmt.Scan(&val); err != nil {
-		fmt.Println(prompt)
-
-		return 0, false
+	if d.lowerBound > d.upperBound {
+		return -1
 	}
 
-	return val, true
+	return d.lowerBound
 }
 
 func main() {
-	countDepts, ok := readInt("Invalid departments count")
-	if !ok {
+	var numDepts int
+	if _, err := fmt.Scan(&numDepts); err != nil {
+		fmt.Println("Invalid departments count")
 		return
 	}
 
-	for range countDepts {
-		countStaff, ok := readInt("Invalid employees count")
-		if !ok {
+	for i := 0; i < numDepts; i++ {
+		var numStaff int
+		if _, err := fmt.Scan(&numStaff); err != nil {
+			fmt.Println("Invalid employees count")
 			return
 		}
 
-		rng := initRange()
+		dept := CreateDepartment()
 
-		for range countStaff {
-			var operation string
-			var temperature int
+		for j := 0; j < numStaff; j++ {
+			var op string
+			var temp int
 
-			if _, err := fmt.Scan(&operation, &temperature); err != nil {
+			if _, err := fmt.Scan(&op, &temp); err != nil {
 				fmt.Println("Invalid temperature constraint")
-
 				return
 			}
 
-			rng = updateRange(rng, operation, temperature)
-
-			if rng.low > rng.high {
-				fmt.Println(noSolutionCode)
-
-				return
-			}
-
-			fmt.Println(rng.low)
+			fmt.Println(dept.ApplyConstraint(op, temp))
 		}
 	}
 }
