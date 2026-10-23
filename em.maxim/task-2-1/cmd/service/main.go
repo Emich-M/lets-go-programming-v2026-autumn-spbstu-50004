@@ -4,6 +4,11 @@ import (
 	"fmt"
 )
 
+const (
+	minLimitTemp = 15
+	maxLimitTemp = 30
+)
+
 type Department struct {
 	lowerBound int
 	upperBound int
@@ -11,8 +16,8 @@ type Department struct {
 
 func CreateDepartment() Department {
 	return Department{
-		lowerBound: 15,
-		upperBound: 30,
+		lowerBound: minLimitTemp,
+		upperBound: maxLimitTemp,
 	}
 }
 
@@ -29,6 +34,7 @@ func (d *Department) ApplyConstraint(sign string, val int) int {
 	}
 
 	if d.lowerBound > d.upperBound {
+
 		return -1
 	}
 
@@ -39,28 +45,32 @@ func main() {
 	var numDepts int
 	if _, err := fmt.Scan(&numDepts); err != nil {
 		fmt.Println("Invalid departments count")
+
 		return
 	}
 
-	for i := 0; i < numDepts; i++ {
+	for range numDepts {
 		var numStaff int
 		if _, err := fmt.Scan(&numStaff); err != nil {
 			fmt.Println("Invalid employees count")
+
 			return
 		}
 
 		dept := CreateDepartment()
 
-		for j := 0; j < numStaff; j++ {
-			var op string
+		for range numStaff {
+			var operatorName string
+
 			var temp int
 
-			if _, err := fmt.Scan(&op, &temp); err != nil {
+			if _, err := fmt.Scan(&operatorName, &temp); err != nil {
 				fmt.Println("Invalid temperature constraint")
+
 				return
 			}
 
-			fmt.Println(dept.ApplyConstraint(op, temp))
+			fmt.Println(dept.ApplyConstraint(operatorName, temp))
 		}
 	}
 }
