@@ -59,9 +59,16 @@ func ParseXML(data []byte) ([]Rate, error) {
 	rates := make([]Rate, 0, len(feed.Items))
 
 	for _, entry := range feed.Items {
-		numCode, err := strconv.Atoi(strings.TrimSpace(entry.NumCode))
-		if err != nil {
-			return nil, fmt.Errorf("parse num code: %w", err)
+		var numCode int
+
+		rawNumCode := strings.TrimSpace(entry.NumCode)
+		if rawNumCode != "" {
+			parsedCode, err := strconv.Atoi(rawNumCode)
+			if err != nil {
+				return nil, fmt.Errorf("parse num code: %w", err)
+			}
+
+			numCode = parsedCode
 		}
 
 		prepared := strings.ReplaceAll(strings.TrimSpace(entry.Value), ",", ".")
