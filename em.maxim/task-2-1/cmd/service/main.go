@@ -43,7 +43,7 @@ func (d *Department) ApplyConstraint(sign string, val int) int {
 func main() {
 	var numDepts int
 	if _, err := fmt.Scan(&numDepts); err != nil {
-		fmt.Println("Invalid departments count")
+		fmt.Println(fmt.Errorf("invalid departments count: %w", err))
 
 		return
 	}
