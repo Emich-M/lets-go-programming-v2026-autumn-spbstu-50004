@@ -1,14 +1,25 @@
 package currency
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
+
+	"golang.org/x/text/encoding/charmap"
 )
+
+const dirPerm fsFileMode = 0o750
+
+const filePerm = 0o600
+
+type fsFileMode = os.FileMode
 
 type valCurs struct {
 	Items []valuteNode `xml:"Valute"`
@@ -26,23 +37,38 @@ type Rate struct {
 	Value    float64 `json:"value"`
 }
 
+func charsetReader(charset string, input io.Reader) (io.Reader, error) {
+	switch strings.ToLower(strings.TrimSpace(charset)) {
+	case "windows-1251", "cp1251":
+		return charmap.Windows1251.NewDecoder().Reader(input), nil
+	default:
+		return input, nil
+	}
+}
+
 func ParseXML(data []byte) ([]Rate, error) {
 	var feed valCurs
-	if err := xml.Unmarshal(data, &feed); err != nil {
-		return nil, err
+
+	decoder := xml.NewDecoder(bytes.NewReader(data))
+	decoder.CharsetReader = charsetReader
+
+	if err := decoder.Decode(&feed); err != nil {
+		return nil, fmt.Errorf("decode xml: %w", err)
 	}
 
 	rates := make([]Rate, 0, len(feed.Items))
+
 	for _, entry := range feed.Items {
 		numCode, err := strconv.Atoi(strings.TrimSpace(entry.NumCode))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("parse num code: %w", err)
 		}
 
 		prepared := strings.ReplaceAll(strings.TrimSpace(entry.Value), ",", ".")
+
 		val, err := strconv.ParseFloat(prepared, 64)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("parse valute value: %w", err)
 		}
 
 		rates = append(rates, Rate{
@@ -61,14 +87,19 @@ func ParseXML(data []byte) ([]Rate, error) {
 
 func SaveJSON(outPath string, rates []Rate) error {
 	dir := filepath.Dir(outPath)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return err
+
+	if err := os.MkdirAll(dir, dirPerm); err != nil {
+		return fmt.Errorf("create output dir: %w", err)
 	}
 
 	encoded, err := json.MarshalIndent(rates, "", "    ")
 	if err != nil {
-		return err
+		return fmt.Errorf("marshal json: %w", err)
 	}
 
-	return os.WriteFile(outPath, encoded, 0o644)
+	if err := os.WriteFile(outPath, encoded, filePerm); err != nil {
+		return fmt.Errorf("write json file: %w", err)
+	}
+
+	return nil
 }
